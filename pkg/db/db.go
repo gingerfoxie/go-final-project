@@ -28,7 +28,7 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-var db *sql.DB
+var DB *sql.DB
 
 func Init() error {
 
@@ -47,7 +47,7 @@ func Init() error {
 		install = true
 	}
 
-	db, err = sql.Open("sqlite", dbPath)
+	DB, err = sql.Open("sqlite", dbPath)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func Init() error {
 	// если install равен true, после открытия БД требуется выполнить
 	// sql-запрос с CREATE TABLE и CREATE INDEX
 	if install {
-		_, err := db.Query(schema)
+		_, err := DB.Query(schema)
 		if err != nil {
 			return err
 		}
@@ -69,12 +69,12 @@ func AddTask(task *Task) (int64, error) {
 
 	var id int64
 
-	if db == nil {
+	if DB == nil {
 		Init()
 		fmt.Println("Database init add")
 	}
 
-	res, err := db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
+	res, err := DB.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
 		task.Date, task.Title, task.Comment, task.Repeat)
 	if err == nil {
 		id, err = res.LastInsertId()
@@ -87,12 +87,12 @@ func TaskList(limit int16) ([]*Task, error) {
 
 	tasks := []*Task{}
 
-	if db == nil {
+	if DB == nil {
 		Init()
 		fmt.Println("Database init list")
 	}
 
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit))
+	rows, err := DB.Query(fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit))
 	if err != nil {
 		log.Println(err)
 		return tasks, err
@@ -123,12 +123,12 @@ func GetTask(id int) (*Task, error) {
 
 	var task Task
 
-	if db == nil {
+	if DB == nil {
 		Init()
-		fmt.Println("Darabase init get task")
+		fmt.Println("Database init get task")
 	}
 
-	row := db.QueryRow("SELECT * FROM scheduler where id = ?", id)
+	row := DB.QueryRow("SELECT * FROM scheduler where id = ?", id)
 	err := row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
 		log.Println(err)
@@ -140,13 +140,13 @@ func GetTask(id int) (*Task, error) {
 
 func UpdateTask(task *Task) error {
 
-	if db == nil {
+	if DB == nil {
 		Init()
 		fmt.Println("Database init update")
 	}
 
 	query := `UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`
-	res, err := db.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
+	res, err := DB.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
 		return err
 	}
@@ -163,13 +163,13 @@ func UpdateTask(task *Task) error {
 
 func UpdateDate(task *Task) error {
 
-	if db == nil {
+	if DB == nil {
 		Init()
 		fmt.Println("Database init update date")
 	}
 
 	query := `UPDATE scheduler SET date = ? WHERE id = ?`
-	res, err := db.Exec(query, task.Date, task.ID)
+	res, err := DB.Exec(query, task.Date, task.ID)
 	if err != nil {
 		return err
 	}
@@ -186,13 +186,13 @@ func UpdateDate(task *Task) error {
 
 func DeleteTask(id int) error {
 
-	if db == nil {
+	if DB == nil {
 		Init()
 		fmt.Println("Database init delete")
 	}
 
 	query := `DELETE FROM scheduler WHERE id = ?`
-	res, err := db.Exec(query, id)
+	res, err := DB.Exec(query, id)
 	if err != nil {
 		return err
 	}
