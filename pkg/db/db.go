@@ -1,12 +1,12 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
 
@@ -28,13 +28,9 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-var DBFilePath string
+var db *sql.DB
 
-func initPath() error {
-
-	if DBFilePath != "" {
-		return nil
-	}
+func Init() error {
 
 	exe, err := os.Executable()
 	if err != nil {
@@ -42,44 +38,19 @@ func initPath() error {
 	}
 
 	rootPath := filepath.Dir(exe)
-	DBFilePath = filepath.Join(rootPath, "scheduler.db")
-	return nil
+	dbPath := filepath.Join(rootPath, "scheduler.db")
 
-}
-func openDB() (*sqlx.DB, error) {
-
-	// dbfile := DBFilePath
-	// envFile := os.Getenv("TODO_DBFILE")
-	// if len(envFile) > 0 {
-	// 	dbfile = envFile
-	// }
-	initPath()
-	//fmt.Println(DBFilePath)
-	db, err := sqlx.Connect("sqlite", DBFilePath)
-	return db, err
-}
-
-func Init() error {
-
-	err := initPath()
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	_, err = os.Stat(DBFilePath)
+	_, err = os.Stat(dbPath)
 
 	var install bool
 	if err != nil {
 		install = true
 	}
-	db, err := openDB()
+
+	db, err = sql.Open("sqlite", dbPath)
 	if err != nil {
 		return err
 	}
-
-	defer db.Close()
 
 	// если install равен true, после открытия БД требуется выполнить
 	// sql-запрос с CREATE TABLE и CREATE INDEX
@@ -98,13 +69,10 @@ func AddTask(task *Task) (int64, error) {
 
 	var id int64
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return 0, err
+	if db == nil {
+		Init()
+		fmt.Println("Database init add")
 	}
-
-	defer db.Close()
 
 	res, err := db.Exec(`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
 		task.Date, task.Title, task.Comment, task.Repeat)
@@ -119,13 +87,10 @@ func TaskList(limit int16) ([]*Task, error) {
 
 	tasks := []*Task{}
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return tasks, err
+	if db == nil {
+		Init()
+		fmt.Println("Database init list")
 	}
-
-	defer db.Close()
 
 	rows, err := db.Query(fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit))
 	if err != nil {
@@ -158,16 +123,13 @@ func GetTask(id int) (*Task, error) {
 
 	var task Task
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return &task, err
+	if db == nil {
+		Init()
+		fmt.Println("Darabase init get task")
 	}
 
-	defer db.Close()
-
 	row := db.QueryRow("SELECT * FROM scheduler where id = ?", id)
-	err = row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	err := row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
 		log.Println(err)
 	}
@@ -178,21 +140,17 @@ func GetTask(id int) (*Task, error) {
 
 func UpdateTask(task *Task) error {
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return err
+	if db == nil {
+		Init()
+		fmt.Println("Database init update")
 	}
-
-	defer db.Close()
 
 	query := `UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`
 	res, err := db.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
 		return err
 	}
-	// метод RowsAffected() возвращает количество записей к которым
-	// был применена SQL команда
+
 	count, err := res.RowsAffected()
 	if err != nil {
 		return err
@@ -205,21 +163,17 @@ func UpdateTask(task *Task) error {
 
 func UpdateDate(task *Task) error {
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return err
+	if db == nil {
+		Init()
+		fmt.Println("Database init update date")
 	}
-
-	defer db.Close()
 
 	query := `UPDATE scheduler SET date = ? WHERE id = ?`
 	res, err := db.Exec(query, task.Date, task.ID)
 	if err != nil {
 		return err
 	}
-	// метод RowsAffected() возвращает количество записей к которым
-	// был применена SQL команда
+
 	count, err := res.RowsAffected()
 	if err != nil {
 		return err
@@ -232,13 +186,10 @@ func UpdateDate(task *Task) error {
 
 func DeleteTask(id int) error {
 
-	db, err := openDB()
-	if err != nil {
-		fmt.Printf("Open database error: %s", err.Error())
-		return err
+	if db == nil {
+		Init()
+		fmt.Println("Database init delete")
 	}
-
-	defer db.Close()
 
 	query := `DELETE FROM scheduler WHERE id = ?`
 	res, err := db.Exec(query, id)
@@ -246,8 +197,6 @@ func DeleteTask(id int) error {
 		return err
 	}
 
-	// метод RowsAffected() возвращает количество записей к которым
-	// был применена SQL команда
 	count, err := res.RowsAffected()
 	if err != nil {
 		return err
@@ -256,4 +205,5 @@ func DeleteTask(id int) error {
 		return fmt.Errorf(`incorrect id for updating task`)
 	}
 	return nil
+
 }

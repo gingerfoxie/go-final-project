@@ -101,19 +101,15 @@ func AddTaskHandler(w http.ResponseWriter, req *http.Request) {
 
 	_, err := buf.ReadFrom(req.Body)
 	if err != nil {
-		//http.Error(w, err.Error(), http.StatusBadRequest)
 		writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
 		return
 	}
 	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
-		//http.Error(w, err.Error(), http.StatusBadRequest)
 		writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
 		return
 	}
-	//fmt.Printf("%+v\n", task)
 	// проверка корректности данных
 	if !CheckTitle(&task) {
-		//http.Error(w, "заголовок задачи не может быть пустым", http.StatusBadRequest)
 		writeJson(w, errResp{Error: "заголовок задачи не может быть пустым"}, http.StatusBadRequest)
 		return
 	}

@@ -8,9 +8,6 @@ import (
 )
 
 func AfterNow(now time.Time, date time.Time) bool {
-	// nowdate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	// checkDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
-	// return checkDate.After(nowdate)
 	nowStr := now.Format(DATE_FORMAT)
 	dateStr := date.Format(DATE_FORMAT)
 	return (dateStr >= nowStr)
