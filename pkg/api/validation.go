@@ -10,7 +10,7 @@ import (
 func AfterNow(now time.Time, date time.Time) bool {
 	nowStr := now.Format(DATE_FORMAT)
 	dateStr := date.Format(DATE_FORMAT)
-	return (dateStr >= nowStr)
+	return (dateStr > nowStr)
 }
 
 func CheckTitle(task *db.Task) bool {
@@ -31,7 +31,7 @@ func CheckDate(task *db.Task) (bool, error) {
 		return false, err
 	}
 
-	if !AfterNow(nowDate, t) {
+	if !AfterNow(nowDate, t) && (now != task.Date) {
 		if len(task.Repeat) == 0 {
 			// если правила повторения нет, то берём сегодняшнее число
 			task.Date = now
