@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gingerfoxie/go-final-project/pkg/db"
+	"go1f/pkg/db"
 )
 
 const (
@@ -82,10 +83,39 @@ func NextStartDateHandler(w http.ResponseWriter, req *http.Request) {
 
 func TasksHandler(w http.ResponseWriter, req *http.Request) {
 
-	tasks, err := db.TaskList(50)
-	if err != nil {
-		writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
-		return
+	var tasks []*db.Task
+	var err error
+
+	searchStr := req.URL.Query().Get("search")
+
+	if len(searchStr) > 0 {
+
+		dateRegex := `^\d{2}.\d{2}.\d{4}$`
+		match, _ := regexp.MatchString(dateRegex, searchStr)
+		if match {
+			dateMap := strings.Split(searchStr, ".")
+			dateStr := fmt.Sprintf("%s%s%s", dateMap[2], dateMap[1], dateMap[0])
+
+			tasks, err = db.TaskList("", dateStr, 50)
+			if err != nil {
+				writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
+				return
+			}
+		} else {
+			tasks, err = db.TaskList(searchStr, "", 50)
+			if err != nil {
+				writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
+				return
+			}
+		}
+
+	} else {
+
+		tasks, err = db.TaskList("", "", 50)
+		if err != nil {
+			writeJson(w, errResp{Error: err.Error()}, http.StatusBadRequest)
+			return
+		}
 	}
 
 	writeJson(w, tasksResp{

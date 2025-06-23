@@ -6,6 +6,7 @@ replace go1f => ./
 
 require (
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	go1f v0.0.0
 	modernc.org/sqlite v1.38.0

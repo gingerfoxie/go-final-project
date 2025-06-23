@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gingerfoxie/go-final-project/pkg/db"
+	"go1f/pkg/db"
 )
 
 func AfterNow(now time.Time, date time.Time) bool {

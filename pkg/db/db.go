@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -40,6 +41,19 @@ func Init() error {
 	rootPath := filepath.Dir(exe)
 	dbPath := filepath.Join(rootPath, "scheduler.db")
 
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	} else {
+		envDBPath := os.Getenv("DBFILE")
+
+		if len(envDBPath) > 0 {
+			dbPath = envDBPath
+		}
+	}
+
+	log.Printf("DB path: %s\n", dbPath)
+
 	_, err = os.Stat(dbPath)
 
 	var install bool
@@ -71,9 +85,9 @@ func AddTask(task *Task) (int64, error) {
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init add")
+		log.Println("Database init (add task)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return 0, err
 		}
 	}
@@ -87,22 +101,29 @@ func AddTask(task *Task) (int64, error) {
 
 }
 
-func TaskList(limit int16) ([]*Task, error) {
+func TaskList(title string, date string, limit int16) ([]*Task, error) {
 
 	tasks := []*Task{}
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init list")
+		log.Println("Database init (task list)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return nil, err
 		}
 	}
 
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit))
+	queryStr := fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit)
+	if title != "" {
+		queryStr = fmt.Sprintf("SELECT * FROM scheduler WHERE title like '%s' ORDER BY date limit %d", "%"+title+"%", limit)
+	} else if date != "" {
+		queryStr = fmt.Sprintf("SELECT * FROM scheduler WHERE date = %s ORDER BY date limit %d", date, limit)
+	}
+
+	rows, err := db.Query(queryStr)
 	if err != nil {
-		log.Println(err)
+		log.Printf("Retrieving task list error: %s\n", err)
 		return tasks, err
 	}
 	defer rows.Close()
@@ -112,14 +133,14 @@ func TaskList(limit int16) ([]*Task, error) {
 
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
-			log.Println(err)
+			log.Printf("Retrieving task list error: %s\n", err)
 			return tasks, err
 		}
 		tasks = append(tasks, &task)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Println(err)
+		log.Printf("Retrieving task list error: %s\n", err)
 		return tasks, err
 	}
 
@@ -133,9 +154,9 @@ func GetTask(id int) (*Task, error) {
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init get task")
+		log.Println("Database init (get task)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return nil, err
 		}
 	}
@@ -154,9 +175,9 @@ func UpdateTask(task *Task) error {
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init update")
+		log.Println("Database init (update task)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return err
 		}
 	}
@@ -181,9 +202,9 @@ func UpdateDate(task *Task) error {
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init update date")
+		log.Println("Database init (update date)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return err
 		}
 	}
@@ -208,9 +229,9 @@ func DeleteTask(id int) error {
 
 	if db == nil {
 		err := Init()
-		fmt.Println("Database init delete")
+		log.Println("Database init (delete task)")
 		if err != nil {
-			fmt.Printf("Init database error: %s", err.Error())
+			log.Printf("Init database error: %s", err.Error())
 			return err
 		}
 	}
