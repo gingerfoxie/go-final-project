@@ -33,10 +33,8 @@ func CheckDate(task *db.Task) (bool, error) {
 
 	if !AfterNow(nowDate, t) && (now != task.Date) {
 		if len(task.Repeat) == 0 {
-			// если правила повторения нет, то берём сегодняшнее число
 			task.Date = now
 		} else {
-			// в противном случае, берём вычисленную ранее следующую дату
 			task.Date, err = NextStartDate(nowDate, task.Date, task.Repeat)
 			if err != nil {
 				return false, errors.New("ошибка расчета даты задачи " + err.Error())

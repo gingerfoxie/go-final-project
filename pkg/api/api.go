@@ -16,9 +16,10 @@ type errResp struct {
 
 func Init() {
 	http.HandleFunc("/api/nextdate", NextStartDateHandler)
-	http.HandleFunc("/api/task", TaskHandler)
-	http.HandleFunc("/api/tasks", TasksHandler)
-	http.HandleFunc("/api/task/done", TaskDoneHandler)
+	http.HandleFunc("/api/task", auth(TaskHandler))
+	http.HandleFunc("/api/tasks", auth(TasksHandler))
+	http.HandleFunc("/api/task/done", auth(TaskDoneHandler))
+	http.HandleFunc("/api/signin", SigninHandler)
 }
 
 func writeJson(w http.ResponseWriter, data any, status int) {

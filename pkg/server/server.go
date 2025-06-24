@@ -8,25 +8,16 @@ import (
 	"strconv"
 
 	"go1f/pkg/api"
-
-	"github.com/joho/godotenv"
 )
 
 func Run() error {
 
 	port := 7540
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	} else {
-		envPort := os.Getenv("SERVER_PORT")
-
-		if len(envPort) > 0 {
-			if eport, err := strconv.ParseInt(envPort, 10, 32); err == nil {
-				port = int(eport)
-
-			}
+	envPort := os.Getenv("SERVER_PORT")
+	if len(envPort) > 0 {
+		if eport, err := strconv.ParseInt(envPort, 10, 32); err == nil {
+			port = int(eport)
 		}
 	}
 

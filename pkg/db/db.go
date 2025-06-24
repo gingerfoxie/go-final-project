@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
 
@@ -41,15 +40,10 @@ func Init() error {
 	rootPath := filepath.Dir(exe)
 	dbPath := filepath.Join(rootPath, "scheduler.db")
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	} else {
-		envDBPath := os.Getenv("DBFILE")
+	envDBPath := os.Getenv("DBFILE")
 
-		if len(envDBPath) > 0 {
-			dbPath = envDBPath
-		}
+	if len(envDBPath) > 0 {
+		dbPath = envDBPath
 	}
 
 	log.Printf("DB path: %s\n", dbPath)
