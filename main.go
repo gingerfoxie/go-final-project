@@ -1,9 +1,11 @@
 package main
 
 import (
-	"go1f/pkg/db"
-	"go1f/pkg/server"
 	"log"
+
+	"go1f/pkg/server"
+
+	"go1f/pkg/db"
 
 	"github.com/joho/godotenv"
 )
