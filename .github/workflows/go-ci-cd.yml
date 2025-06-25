@@ -79,7 +79,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{secrets.DOCKER_USERNAME}}/todo-list
+          images: ${{secrets.DOCKER_USERNAME}}/todo-list-golang
 
       - name: Build and push Docker Image
         uses: docker/build-push-action@v5
