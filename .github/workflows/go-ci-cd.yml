@@ -5,12 +5,30 @@ on:
 jobs:
  build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.24.x]
+  
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-go@v4
 
-    - name: Build
-      run: go build -v ./...
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+        
+    - name: Display Go version
+      run: go version
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Run local server
+      run: |
+        CGO_ENABLED=0 GOOS=linux go run main.go &
+        sleep 100
+
  tests:
     needs: build
     runs-on: ubuntu-latest
@@ -38,7 +56,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.24
+        go-version: 1.24.x
     - name: Verify dependencies
       run: go mod verify 
     - name: Build
@@ -71,7 +89,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{secrets.DOCKER_USERNAME}}/todo-list
+          images: ${{secrets.DOCKER_USERNAME}}/todo-list-golang
 
       - name: Build and push Docker Image
         uses: docker/build-push-action@v5
