@@ -95,7 +95,7 @@ func AddTask(task *Task) (int64, error) {
 
 }
 
-func TaskList(title string, date string, limit int16) ([]*Task, error) {
+func TaskList(text string, date string, limit int16) ([]*Task, error) {
 
 	tasks := []*Task{}
 
@@ -109,8 +109,8 @@ func TaskList(title string, date string, limit int16) ([]*Task, error) {
 	}
 
 	queryStr := fmt.Sprintf("SELECT * FROM scheduler ORDER BY date limit %d ", limit)
-	if title != "" {
-		queryStr = fmt.Sprintf("SELECT * FROM scheduler WHERE title like '%s' ORDER BY date limit %d", "%"+title+"%", limit)
+	if text != "" {
+		queryStr = fmt.Sprintf("SELECT * FROM scheduler WHERE title like '%s' OR comment like '%s' ORDER BY date limit %d", "%"+text+"%", "%"+text+"%", limit)
 	} else if date != "" {
 		queryStr = fmt.Sprintf("SELECT * FROM scheduler WHERE date = %s ORDER BY date limit %d", date, limit)
 	}

@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -67,16 +66,13 @@ func auth(next http.HandlerFunc) http.HandlerFunc {
 				writeJson(w, errResp{Error: err.Error()}, http.StatusInternalServerError)
 				return
 			}
-			//log.Println("old " + jwt)
+
 			valid = strings.EqualFold(signedToken, jwt)
 			if !valid {
-				log.Println("wrong token")
-				log.Println("new " + signedToken)
-				log.Println("old " + jwt)
 				http.Error(w, "Authentification required", http.StatusUnauthorized)
 				return
 			}
-			log.Println("auth OK")
+
 		}
 		next(w, r)
 	})
