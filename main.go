@@ -3,11 +3,10 @@ package main
 import (
 	"log"
 
-	"go1f/pkg/server"
+	"github.com/joho/godotenv"
 
 	"go1f/pkg/db"
-
-	"github.com/joho/godotenv"
+	"go1f/pkg/server"
 )
 
 func main() {
@@ -23,6 +22,7 @@ func main() {
 		log.Printf("Init database error: %s", err.Error())
 		return
 	}
+	defer db.Close()
 
 	log.Println("Starting server")
 	err = server.Run()

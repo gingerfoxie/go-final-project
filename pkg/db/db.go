@@ -40,7 +40,7 @@ func Init() error {
 	rootPath := filepath.Dir(exe)
 	dbPath := filepath.Join(rootPath, "scheduler.db")
 
-	envDBPath := os.Getenv("DBFILE")
+	envDBPath := os.Getenv("TODO_DBFILE")
 
 	if len(envDBPath) > 0 {
 		dbPath = envDBPath
@@ -71,6 +71,13 @@ func Init() error {
 
 	return nil
 
+}
+
+func Close() {
+
+	if db != nil {
+		db.Close()
+	}
 }
 
 func AddTask(task *Task) (int64, error) {

@@ -12,6 +12,10 @@ import (
 
 func NextStartDateHandler(w http.ResponseWriter, req *http.Request) {
 
+	if req.Method != http.MethodGet {
+		return
+	}
+
 	now := time.Now()
 	nowDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	nowParam := req.FormValue("now")

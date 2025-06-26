@@ -52,8 +52,7 @@ func SigninHandler(w http.ResponseWriter, req *http.Request) {
 
 func auth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pass := os.Getenv("TODO_PASSWORD")
-		if len(pass) > 0 {
+		if len(Pass) > 0 {
 			var jwt string
 			cookie, err := r.Cookie("token")
 			if err == nil {
@@ -80,8 +79,7 @@ func auth(next http.HandlerFunc) http.HandlerFunc {
 
 func signedToken() (string, error) {
 
-	envSecret := os.Getenv("TODO_PASSWORD")
-	secret := []byte(envSecret)
+	secret := []byte(Pass)
 
 	jwtToken := jwt.New(jwt.SigningMethodHS256)
 	return jwtToken.SignedString(secret)
