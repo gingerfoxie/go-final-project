@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
@@ -33,7 +32,7 @@ func SigninHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if authR.Password == os.Getenv("TODO_PASSWORD") {
+	if authR.Password == Pass {
 
 		signedToken, err := signedToken()
 		if err != nil {
